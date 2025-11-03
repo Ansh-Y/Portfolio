@@ -12,19 +12,47 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Figtree:wght@700&display=swap" rel="stylesheet">
-    <!-- Chosen Palette: Amber Light -->
-    <!-- Application Structure Plan: A single-page application with a sticky top navigation bar for seamless scrolling between thematic sections (About, Skills, Projects, Experience, Education, Contact). This structure replaces a linear scroll with an intuitive, explorable user journey. Interactive elements like project filters, a skills radar chart, and scroll-based animations are included to increase user engagement and data comprehension. -->
-    <!-- Visualization & Content Choices: 
-        1. Report Info: Technical Skills list -> Goal: Visualize skill distribution and proficiency -> Viz/Presentation Method: Radar Chart -> Interaction: Hover tooltips for skill names -> Justification: A radar chart offers a more dynamic and comprehensive snapshot of abilities than a static list, highlighting strengths across different domains. -> Library/Method: Chart.js (Canvas).
-        2. Report Info: List of projects -> Goal: Organize and allow users to explore relevant work -> Viz/Presentation Method: Filterable grid of project cards -> Interaction: Clickable filter buttons (All, Personal) to show/hide projects -> Justification: This enables users to focus on specific project types, improving usability. -> Library/Method: Vanilla JS DOM Manipulation.
-    -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #F3F4F6; /* bg-gray-100 */
-            color: #1F2937; /* text-gray-800 */
+            color: #1F2937; /* Default text color (dark gray) */
         }
+        
+        body::before {
+            content: '';
+            position: fixed; /* Stays in place during scroll */
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1; /* Puts it behind all other content */
+            
+            background-image: url('e4.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            
+            filter: blur(20px); /* Heavy blur */
+            
+            /* Prevents hard-blurred edges from showing */
+            transform: scale(1.05); 
+        }
+
+        /* Class for text OUTSIDE cards that should be white */
+        .text-white-outside-card {
+            color: #ffffff; /* White color */
+        }
+
+        /* Lighter gray for paragraphs OUTSIDE cards */
+        .text-gray-600-outside-card {
+             color: #d1d5db; /* A lighter gray */
+        }
+
+        /* Ensure header links stay dark against white header */
+        .glass-header .nav-link {
+            color: #1F2937;
+        }
+
         .chart-container {
             position: relative;
             width: 100%;
@@ -123,34 +151,35 @@
             transform: translateY(0);
         }
 
-        /* Light-Black Glassmorphism CSS */
+        /* --- MODIFIED GLASSMORPHISM CSS --- */
         .glass-header {
-            background: rgba(255, 255, 255, 0.75); /* bg-white at 75% */
+            background: rgba(255, 255, 255, 0.75); /* Header is 75% white */
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
 
         .glass-card {
-            background: rgba(31, 41, 55, 0.05); /* light-black glass */
+            background: rgba(255, 255, 255, 0.5); /* 50% white translucent for readability */
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.18); /* Light border */
             transition: all 0.3s ease;
         }
 
         .glass-button {
-            background: rgba(31, 41, 55, 0.1); /* light-black glass */
+            background: rgba(255, 255, 255, 0.4); /* 40% white translucent */
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2); /* Light border */
             transition: all 0.3s ease;
-            color: #374151; /* text-gray-700 */
+            color: #1F2937; /* Darker text for better contrast inside button */
         }
         .glass-button:hover {
-            background: rgba(31, 41, 55, 0.2);
-            border-color: rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.6); /* 60% white on hover */
+            border-color: rgba(255, 255, 255, 0.3);
         }
+        /* --- END OF MODIFIED CSS --- */
 
         .filter-btn {
             padding-left: 1rem;
@@ -323,8 +352,8 @@
                         <div class="glass-card inline-block p-4 rounded-[3rem] mb-4">
                             <img src="prof.jpg" alt="Ansh Yadav" class="w-27 h-40 md:w-40 md:h-56 object-cover rounded-[2.5rem] block">
                         </div>
-                    <h1 class="text-4xl md:text-5xl font-bold text-gray-900">Ansh Yadav</h1>
-                    <p class="mt-2 text-lg md:text-xl text-gray-600">B.Tech – Computer Science and Business Systems (2027)</p>
+                    <h1 class="text-4xl md:text-5xl font-bold text-white-outside-card">Ansh Yadav</h1>
+                    <p class="mt-2 text-lg md:text-xl text-white-outside-card">B.Tech – Computer Science and Business Systems (2027)</p>
                     <div class="mt-8 flex justify-center flex-wrap gap-4">
                         <a href="mailto:[Insert email]" class="glass-button rounded-full text-sm font-medium px-4 py-2">
                             📧 Email Me
@@ -371,7 +400,7 @@
         </section>
 
         <section id="skills" class="pt-24 -mt-16">
-            <h2 class="text-3xl font-bold text-gray-900 text-center mb-12 anim-fade-up">Technical Skills</h2>
+            <h2 class="text-3xl font-bold text-white-outside-card anim-fade-up text-center mb-12">Technical Skills</h2>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center anim-fade-up">
                 <div class="glass-card rounded-lg p-6">
                     <p class="text-center text-gray-600 mb-6">This chart provides a visual representation of my key technical domains. It highlights my focus on Data Analytics, proficiency in foundational Programming, and growing experience in Web Development and Business Systems.</p>
@@ -381,7 +410,7 @@
                 </div>
                 <div class="space-y-6">
                     <div>
-                        <h3 class="font-semibold text-lg text-gray-900 mb-3">Programming & Analytics</h3>
+                        <h3 class="font-semibold text-lg text-white mb-3">Programming & Analytics</h3>
                         <div class="flex flex-wrap gap-2">
                            <span class="bg-blue-100 text-blue-800 border border-blue-200 text-sm font-medium px-3 py-1 rounded-full">C</span>
                            <span class="bg-blue-100 text-blue-800 border border-blue-200 text-sm font-medium px-3 py-1 rounded-full">C++</span>
@@ -391,18 +420,17 @@
                         </div>
                     </div>
                     <div>
-                        <h3 class="font-semibold text-lg text-gray-900 mb-3">Tools & Domains</h3>
+                        <h3 class="font-semibold text-lg text-white mb-3">Tools & Domains</h3>
                          <div class="flex flex-wrap gap-2">
                             <span class="bg-yellow-100 text-yellow-800 border border-yellow-200 text-sm font-medium px-3 py-1 rounded-full">MS Office</span>
                             <span class="bg-yellow-100 text-yellow-800 border border-yellow-200 text-sm font-medium px-3 py-1 rounded-full">Wix</span>
                             <span class="bg-yellow-100 text-yellow-800 border border-yellow-200 text-sm font-medium px-3 py-1 rounded-full">UTM Virtualization</span>
                             <span class="bg-purple-100 text-purple-800 border border-purple-200 text-sm font-medium px-3 py-1 rounded-full">Web Development</span>
                             <span class="bg-purple-100 text-purple-800 border border-purple-200 text-sm font-medium px-3 py-1 rounded-full">Business Systems</span>
-                            <span class="bg-purple-100 text-purple-800 border border-purple-200 text-sm font-medium px-3 py-1 rounded-full">Clean & Green Technology</span>
                         </div>
                     </div>
                      <div>
-                        <h3 class="font-semibold text-lg text-gray-900 mb-3">Languages</h3>
+                        <h3 class="font-semibold text-lg text-white mb-3">Languages</h3>
                          <div class="flex flex-wrap gap-2">
                             <span class="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">English (Fluent)</span>
                             <span class="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">Hindi (Native)</span>
@@ -415,8 +443,8 @@
         </section>
 
         <section id="projects" class="pt-24 -mt-16">
-            <h2 class="text-3xl font-bold text-gray-900 text-center mb-4 anim-fade-up">Projects</h2>
-            <p class="text-center text-gray-600 max-w-2xl mx-auto mb-8 anim-fade-up">Here are some of my key projects. Use the filters to explore projects based on their type. This section showcases my hands-on experience in both web development and data analytics.</p>
+            <h2 class="text-3xl font-bold text-white-outside-card text-center mb-4 anim-fade-up">Projects</h2>
+            <p class="text-center text-gray-600-outside-card max-w-2xl mx-auto mb-8 anim-fade-up">Here are some of my key projects. Use the filters to explore projects based on their type. This section showcases my hands-on experience in both web development and data analytics.</p>
             <div id="project-filters" class="flex justify-center flex-wrap gap-2 mb-8 anim-fade-up">
                 <button data-filter="all" class="filter-btn active glass-button rounded-full text-sm font-medium">All</button>
                 <button data-filter="academic" class="filter-btn glass-button rounded-full text-sm font-medium">Academic</button>
@@ -462,30 +490,29 @@
         </section>
 
         <section id="experience" class="pt-24 -mt-16">
-            <h2 class="text-3xl font-bold text-gray-900 text-center mb-12 anim-fade-up">Experience & Certifications</h2>
+            <h2 class="text-3xl font-bold text-white-outside-card text-center mb-12 anim-fade-up">Experience & Certifications</h2>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 anim-fade-up">
                 <div>
-                    <h3 class="text-2xl font-semibold text-gray-900 mb-6">Leadership & Co-curriculars</h3>
+                    <h3 class="text-2xl font-semibold text-white mb-6">Leadership & Co-curriculars</h3>
                     <div class="space-y-6 border-l-2 border-gray-300 pl-6">
                         <div class="relative">
                             <div class="absolute -left-[34px] top-1 h-4 w-4 rounded-full bg-[#F59E0B]"></div>
-                            <h4 class="font-bold text-gray-800">HackSphere 2025: Coordinator</h4>
-                            <p class="text-sm text-gray-600">Managed logistics and participant support.</p>
+                            <h4 class="font-bold text-white">HackSphere 2025: Coordinator</h4>
+                            <p class="text-sm text-gray-600-outside-card">Managed logistics and participant support.</p>
                         </div>
                         <div class="relative">
                             <div class="absolute -left-[34px] top-1 h-4 w-4 rounded-full bg-[#F59E0B]"></div>
-                            <h4 class="font-bold text-gray-800">Innovision 2k23: Core Team Member</h4>
-                            <p class="text-sm text-gray-600">Focused on Startup Outreach.</p>
+                            <h4 class="font-bold text-white">Innovision 2k23: Core Team Member</h4>
+                            <p class="text-sm text-gray-600-outside-card">Focused on Startup Outreach.</p>
                         </div>
                         <div class="relative">
                            <div class="absolute -left-[34px] top-1 h-4 w-4 rounded-full bg-[#F59E0B]"></div>
-                            <h4 class="font-bold text-gray-800">Techhawks & GDGC Clubs: Lead & Coordinator</h4>
-                            <p class="text-sm text-gray-600">Served in operations, management, and event coordination roles for speaker events.</p>
+                            <h4 class="font-bold text-white">Techhawks & GDGC Clubs: Lead & Coordinator</h4>
+                            <p class="text-sm text-gray-600-outside-card">Served in operations, management, and event coordination roles for speaker events.</p>
                         </div>
                     </div>
-                    <!-- Gallery Section -->
                     <div class="mt-8">
-                        <h4 class="text-xl font-semibold text-gray-900 mb-4">HackSphere 2025 Moments</h4>
+                        <h4 class="text-xl font-semibold text-white mb-4">HackSphere 2025 Moments</h4>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div class="glass-card rounded-lg overflow-hidden cursor-pointer transform transition-transform hover:scale-105" onclick="showModal('e1.jpeg', 'portrait')">
                                 <img src="e1.jpeg" alt="HackSphere Individual" class="w-full h-44 object-cover object-[center_35%] p-1">
@@ -500,7 +527,7 @@
                     </div>
                 </div>
                 <div>
-                    <h3 class="text-2xl font-semibold text-gray-900 mb-6">Certifications & Learning</h3>
+                    <h3 class="text-2xl font-semibold text-white mb-6">Certifications & Learning</h3>
                     <div class="space-y-4">
                         <div class="glass-card rounded-lg p-4 flex justify-between items-center">
                             <div>
@@ -543,7 +570,7 @@
         </section>
 
         <section id="education" class="pt-24 -mt-16">
-            <h2 class="text-3xl font-bold text-gray-900 text-center mb-12 anim-fade-up">Education</h2>
+            <h2 class="text-3xl font-bold text-white-outside-card text-center mb-12 anim-fade-up">Education</h2>
             <div class="max-w-3xl mx-auto overflow-x-auto glass-card rounded-lg p-4 anim-fade-up">
                  <table class="w-full text-left">
                     <thead>
@@ -657,8 +684,8 @@
             navLinks.forEach(link => {
                 link.addEventListener('click', () => {
                      if (mobileMenu.classList.contains('hidden') === false) {
-                        mobileMenu.classList.add('hidden');
-                        mobileMenuSVGs.forEach(svg => svg.classList.toggle('hidden'));
+                         mobileMenu.classList.add('hidden');
+                         mobileMenuSVGs.forEach(svg => svg.classList.toggle('hidden'));
                      }
                 });
             });
@@ -690,7 +717,7 @@
                                 grid: { color: 'rgba(0, 0, 0, 0.1)' },
                                 pointLabels: {
                                     font: { size: 12, weight: '500' },
-                                    color: '#1F2937'
+                                    color: '#1F2937' /* Dark text for chart labels */
                                 },
                                 ticks: {
                                     backdropColor: 'transparent',
@@ -728,11 +755,11 @@
                 projectCards.forEach(card => {
                     const category = card.dataset.category;
                     if (filter === 'all' || filter === category) {
-                       setTimeout(() => {
-                         card.classList.remove('hidden');
-                       }, 10);
+                        setTimeout(() => {
+                            card.classList.remove('hidden');
+                        }, 10);
                     } else {
-                       card.classList.add('hidden');
+                        card.classList.add('hidden');
                     }
                 });
             });
@@ -752,7 +779,6 @@
         });
     </script>
 
-    <!-- Image Modal -->
     <div id="imageModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal()">&times;</span>
