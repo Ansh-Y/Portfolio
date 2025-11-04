@@ -9,15 +9,38 @@
     <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/ogl"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles-slim@2.12.0/tsparticles.slim.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Figtree:wght@700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --x: 50%;
+            --y: 50%;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
             color: #1F2937; /* Default text color (dark gray) */
+            overflow-x: hidden; /* Prevent horizontal scroll from effects */
         }
         
+        /* Use Figtree for all headings for more style */
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Figtree', sans-serif;
+            font-weight: 700;
+        }
+
+        /* Particle.js container */
+        #tsparticles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2; /* BEHIND the blur layer */
+        }
+
         body::before {
             content: '';
             position: fixed; /* Stays in place during scroll */
@@ -27,15 +50,18 @@
             height: 100vh;
             z-index: -1; /* Puts it behind all other content */
             
-            background-image: url('e4.jpeg');
+            pointer-events: none; /* Allows clicks to go through */
+
+            /* DYNAMIC SPOTLIGHT + BLURRED BACKGROUND */
+            background: radial-gradient(circle at var(--x) var(--y), 
+                          rgba(255, 255, 255, 0.15) 0%, 
+                          rgba(255, 255, 255, 0) 40vw), 
+                          url('e4.jpeg');
             background-size: cover;
             background-position: center;
-            background-repeat: no-repeat;
-            
             filter: blur(20px); /* Heavy blur */
-            
-            /* Prevents hard-blurred edges from showing */
             transform: scale(1.05); 
+            transition: background 0.1s ease; /* Smooth spotlight movement */
         }
 
         /* Class for text OUTSIDE cards that should be white */
@@ -46,6 +72,15 @@
         /* Lighter gray for paragraphs OUTSIDE cards */
         .text-gray-600-outside-card {
              color: #d1d5db; /* A lighter gray */
+        }
+        
+        /* Gradient text for main headings */
+        .text-accent-gradient {
+            background: linear-gradient(45deg, #F59E0B, #FFC837);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
         }
 
         /* Ensure header links stay dark against white header */
@@ -141,16 +176,6 @@
             display: none;
         }
         
-        .anim-fade-up {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-        }
-        .anim-fade-up.is-visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
         /* --- MODIFIED GLASSMORPHISM CSS --- */
         .glass-header {
             background: rgba(255, 255, 255, 0.75); /* Header is 75% white */
@@ -160,13 +185,50 @@
         }
 
         .glass-card {
-            background: rgba(255, 255, 255, 0.5); /* 50% white translucent for readability */
+            background: rgba(255, 255, 255, 0.5); /* 50% white translucent */
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.18); /* Light border */
-            transition: all 0.3s ease;
+            border-top: 1px solid rgba(255, 255, 255, 0.6);
+            border-left: 1px solid rgba(255, 255, 255, 0.4);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: none;
+            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), 
+                        box-shadow 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+                        border-color 0.4s ease,
+                        background 0.4s ease;
+            position: relative; /* Needed for the sheen pseudo-element */
+            overflow: hidden;   /* Clip the sheen */
         }
-
+        
+        /* NEW: Card Sheen Effect */
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            /* Use CSS variables set by JS */
+            top: var(--mouse-y, 0px); 
+            left: var(--mouse-x, 0px);
+            width: 0;
+            height: 0;
+            background: radial-gradient(
+                400px circle,
+                rgba(255, 255, 255, 0.2), /* Sheen color */
+                transparent 80%
+            );
+            border-radius: 50%;
+            transform: translate(-50%, -50%); /* Center on cursor */
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .glass-card:hover::before {
+            opacity: 1;
+        }
+        
+        .glass-card:hover {
+            border-color: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.6);
+        }
+        
         .glass-button {
             background: rgba(255, 255, 255, 0.4); /* 40% white translucent */
             backdrop-filter: blur(8px);
@@ -178,6 +240,8 @@
         .glass-button:hover {
             background: rgba(255, 255, 255, 0.6); /* 60% white on hover */
             border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px); /* Slight lift */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
         /* --- END OF MODIFIED CSS --- */
 
@@ -193,6 +257,111 @@
             color: #111827;
             border-color: #F59E0B;
             font-weight: 500;
+        }
+        
+        /* Timeline styles */
+        .timeline-line {
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        .timeline-dot {
+            background-color: #F59E0B;
+            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.3); /* Glowing effect */
+        }
+        
+        /* Skill tag hover */
+        .skill-tag {
+            transition: all 0.2s ease-out;
+        }
+        .skill-tag:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Animated "Say Hello" Button */
+        .say-hello-button {
+            display: inline-flex;
+            align-items: center;
+            overflow: hidden; /* Key for the slide animation */
+            position: relative;
+            padding: 12px 32px; /* Tailwind px-8 py-3 */
+            background-color: #F59E0B;
+            color: #111827; /* text-gray-900 */
+            font-size: 0.875rem; /* text-sm */
+            font-weight: 700;  /* font-bold */
+            border-radius: 9999px; /* rounded-full */
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .say-hello-button:hover {
+            background-color: #f6ad2e; /* Lighter amber */
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+            transform: translateY(-2px);
+        }
+        .say-hello-button span {
+            display: block;
+            transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .say-hello-button .arrow-icon {
+            position: absolute;
+            right: 32px;
+            transform: translateX(30px);
+            opacity: 0;
+            font-size: 1.25rem;
+        }
+        .say-hello-button:hover span:first-child {
+            transform: translateX(-15px); /* Slide text left */
+        }
+        .say-hello-button:hover .arrow-icon {
+            transform: translateX(0); /* Slide arrow in */
+            opacity: 1;
+        }
+
+
+        /* --- NEW: Scroll Animations --- */
+        .anim-fade-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .anim-fade-up.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .fade-in-left {
+            opacity: 0;
+            transform: translateX(-50px) translateY(30px);
+            transition: opacity 0.8s ease-out, transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .fade-in-right {
+            opacity: 0;
+            transform: translateX(50px) translateY(30px);
+            transition: opacity 0.8s ease-out, transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .fade-in-left.is-visible,
+        .fade-in-right.is-visible {
+            opacity: 1;
+            transform: translateX(0) translateY(0);
+        }
+        /* --- End Scroll Animations --- */
+
+
+        /* On-load animations */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideInUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .animate-load-1 { 
+            animation: slideInUp 0.6s 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; 
+        }
+        .animate-load-2 { 
+            animation: slideInUp 0.6s 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; 
+        }
+        .animate-load-3 { 
+            animation: slideInUp 0.6s 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; 
+        }
+        .animate-load-4 { 
+            animation: slideInUp 0.6s 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; 
         }
 
         /* Modal styles */
@@ -303,11 +472,13 @@
 </head>
 <body class="antialiased">
 
+    <div id="tsparticles"></div>
+
     <header class="glass-header sticky top-0 z-50">
         <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <div class="flex-shrink-0">
-                    <a href="#" class="text-2xl font-bold text-gray-900">Ansh Yadav</a>
+                    <a href="#" class="text-2xl font-bold text-gray-900" style="font-family: 'Figtree', sans-serif;">Ansh Yadav</a>
                 </div>
                 <div class="hidden md:block">
                     <div class="ml-10 flex items-baseline space-x-4">
@@ -349,12 +520,12 @@
         <section id="about" class="min-h-screen flex items-center pt-16 -mt-16">
             <div class="w-full relative pb-20">
                 <div class="text-center mb-12">
-                        <div class="glass-card inline-block p-4 rounded-[3rem] mb-4">
+                        <div class="glass-card inline-block p-4 rounded-[3rem] mb-4 animate-load-1">
                             <img src="prof.jpg" alt="Ansh Yadav" class="w-27 h-40 md:w-40 md:h-56 object-cover rounded-[2.5rem] block">
                         </div>
-                    <h1 class="text-4xl md:text-5xl font-bold text-white-outside-card">Ansh Yadav</h1>
-                    <p class="mt-2 text-lg md:text-xl text-white-outside-card">B.Tech – Computer Science and Business Systems (2027)</p>
-                    <div class="mt-8 flex justify-center flex-wrap gap-4">
+                    <h1 class="text-4xl md:text-5xl font-bold text-accent-gradient animate-load-2">Ansh Yadav</h1>
+                    <p class="mt-2 text-lg md:text-xl text-white-outside-card animate-load-3">B.Tech – Computer Science and Business Systems (2027)</p>
+                    <div class="mt-8 flex justify-center flex-wrap gap-4 animate-load-4">
                         <a href="mailto:[Insert email]" class="glass-button rounded-full text-sm font-medium px-4 py-2">
                             📧 Email Me
                         </a>
@@ -367,12 +538,12 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 anim-fade-up">
-                    <div class="glass-card rounded-lg p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="glass-card rounded-lg p-6 anim-fade-up">
                         <h3 class="text-xl font-semibold text-gray-900 mb-3">💡 About Me</h3>
                         <p class="text-gray-600 leading-relaxed">Enthusiastic and driven Computer Science and Business Systems student with a strong interest in technology, data analytics, and innovation. Experienced in event coordination, project development, and technical club activities. Skilled in creating interactive dashboards with Power BI and exploring real-world business solutions through data.</p>
                     </div>
-                    <div class="glass-card rounded-lg p-6">
+                    <div class="glass-card rounded-lg p-6 anim-fade-up">
                         <h3 class="text-xl font-semibold text-gray-900 mb-3">🎯 Career Objective</h3>
                         <p class="text-gray-600 leading-relaxed">To become a versatile professional who bridges the gap between technology and business, specializing in data analytics and innovative digital solutions.</p>
                     </div>
@@ -400,42 +571,42 @@
         </section>
 
         <section id="skills" class="pt-24 -mt-16">
-            <h2 class="text-3xl font-bold text-white-outside-card anim-fade-up text-center mb-12">Technical Skills</h2>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center anim-fade-up">
-                <div class="glass-card rounded-lg p-6">
+            <h2 class="text-3xl font-bold text-accent-gradient anim-fade-up text-center mb-12">Technical Skills</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div class="glass-card rounded-lg p-6 fade-in-left">
                     <p class="text-center text-gray-600 mb-6">This chart provides a visual representation of my key technical domains. It highlights my focus on Data Analytics, proficiency in foundational Programming, and growing experience in Web Development and Business Systems.</p>
                     <div class="chart-container">
                         <canvas id="skillsRadarChart"></canvas>
                     </div>
                 </div>
-                <div class="space-y-6">
+                <div class="space-y-6 fade-in-right">
                     <div>
                         <h3 class="font-semibold text-lg text-white mb-3">Programming & Analytics</h3>
                         <div class="flex flex-wrap gap-2">
-                           <span class="bg-blue-100 text-blue-800 border border-blue-200 text-sm font-medium px-3 py-1 rounded-full">C</span>
-                           <span class="bg-blue-100 text-blue-800 border border-blue-200 text-sm font-medium px-3 py-1 rounded-full">C++</span>
-                           <span class="bg-green-100 text-green-800 border border-green-200 text-sm font-medium px-3 py-1 rounded-full">Power BI</span>
-                           <span class="bg-green-100 text-green-800 border border-green-200 text-sm font-medium px-3 py-1 rounded-full">Data Modeling</span>
-                           <span class="bg-green-100 text-green-800 border border-green-200 text-sm font-medium px-3 py-1 rounded-full">DAX</span>
+                           <span class="skill-tag bg-blue-100 text-blue-800 border border-blue-200 text-sm font-medium px-3 py-1 rounded-full">C</span>
+                           <span class="skill-tag bg-blue-100 text-blue-800 border border-blue-200 text-sm font-medium px-3 py-1 rounded-full">C++</span>
+                           <span class="skill-tag bg-green-100 text-green-800 border border-green-200 text-sm font-medium px-3 py-1 rounded-full">Power BI</span>
+                           <span class="skill-tag bg-green-100 text-green-800 border border-green-200 text-sm font-medium px-3 py-1 rounded-full">Data Modeling</span>
+                           <span class="skill-tag bg-green-100 text-green-800 border border-green-200 text-sm font-medium px-3 py-1 rounded-full">DAX</span>
                         </div>
                     </div>
                     <div>
                         <h3 class="font-semibold text-lg text-white mb-3">Tools & Domains</h3>
                          <div class="flex flex-wrap gap-2">
-                            <span class="bg-yellow-100 text-yellow-800 border border-yellow-200 text-sm font-medium px-3 py-1 rounded-full">MS Office</span>
-                            <span class="bg-yellow-100 text-yellow-800 border border-yellow-200 text-sm font-medium px-3 py-1 rounded-full">Wix</span>
-                            <span class="bg-yellow-100 text-yellow-800 border border-yellow-200 text-sm font-medium px-3 py-1 rounded-full">UTM Virtualization</span>
-                            <span class="bg-purple-100 text-purple-800 border border-purple-200 text-sm font-medium px-3 py-1 rounded-full">Web Development</span>
-                            <span class="bg-purple-100 text-purple-800 border border-purple-200 text-sm font-medium px-3 py-1 rounded-full">Business Systems</span>
+                            <span class="skill-tag bg-yellow-100 text-yellow-800 border border-yellow-200 text-sm font-medium px-3 py-1 rounded-full">MS Office</span>
+                            <span class="skill-tag bg-yellow-100 text-yellow-800 border border-yellow-200 text-sm font-medium px-3 py-1 rounded-full">Wix</span>
+                            <span class="skill-tag bg-yellow-100 text-yellow-800 border border-yellow-200 text-sm font-medium px-3 py-1 rounded-full">UTM Virtualization</span>
+                            <span class="skill-tag bg-purple-100 text-purple-800 border border-purple-200 text-sm font-medium px-3 py-1 rounded-full">Web Development</span>
+                            <span class="skill-tag bg-purple-100 text-purple-800 border border-purple-200 text-sm font-medium px-3 py-1 rounded-full">Business Systems</span>
                         </div>
                     </div>
                      <div>
                         <h3 class="font-semibold text-lg text-white mb-3">Languages</h3>
                          <div class="flex flex-wrap gap-2">
-                            <span class="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">English (Fluent)</span>
-                            <span class="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">Hindi (Native)</span>
-                            <span class="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">French (Beginner)</span>
-                            <span class="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">Japanese (Beginner)</span>
+                            <span class="skill-tag bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">English (Fluent)</span>
+                            <span class="skill-tag bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">Hindi (Native)</span>
+                            <span class="skill-tag bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">French (Beginner)</span>
+                            <span class="skill-tag bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">Japanese (Beginner)</span>
                         </div>
                     </div>
                 </div>
@@ -443,7 +614,7 @@
         </section>
 
         <section id="projects" class="pt-24 -mt-16">
-            <h2 class="text-3xl font-bold text-white-outside-card text-center mb-4 anim-fade-up">Projects</h2>
+            <h2 class="text-3xl font-bold text-accent-gradient text-center mb-4 anim-fade-up">Projects</h2>
             <p class="text-center text-gray-600-outside-card max-w-2xl mx-auto mb-8 anim-fade-up">Here are some of my key projects. Use the filters to explore projects based on their type. This section showcases my hands-on experience in both web development and data analytics.</p>
             <div id="project-filters" class="flex justify-center flex-wrap gap-2 mb-8 anim-fade-up">
                 <button data-filter="all" class="filter-btn active glass-button rounded-full text-sm font-medium">All</button>
@@ -451,38 +622,38 @@
                 <button data-filter="personal" class="filter-btn glass-button rounded-full text-sm font-medium">Personal</button>
             </div>
             <div id="project-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <div class="project-card glass-card rounded-lg p-6 hover:border-amber-500 border border-transparent transition-all group anim-fade-up" data-category="academic">
+                <div class="project-card glass-card rounded-lg p-6 group anim-fade-up" data-category="academic">
                     <a href="https://github.com/Ansh-Y/votingSystem" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2">
                         <h3 class="text-xl font-bold text-gray-900 group-hover:text-[#F59E0B] transition-colors">Voting System Website</h3>
                         <span class="text-lg text-gray-500 group-hover:text-[#F59E0B] transition-colors transform -rotate-45 group-hover:rotate-0">→</span>
                     </a>
                     <p class="text-sm text-gray-600 mt-1 mb-3">Role-based voting with MySQL, React</p>
                      <div class="flex flex-wrap gap-2 mb-4">
-                        <span class="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">Node.js</span>
-                        <span class="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">React</span>
-                        <span class="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">MySQL</span>
+                        <span class="skill-tag text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">Node.js</span>
+                        <span class="skill-tag text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">React</span>
+                        <span class="skill-tag text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">MySQL</span>
                     </div>
                     <p class="text-gray-600 text-sm">An ongoing personal project to develop a full-stack web application for a secure, role-based voting system.</p>
                 </div>
-                <div class="project-card glass-card rounded-lg p-6 hover:border-amber-500 border border-transparent transition-all group anim-fade-up" data-category="personal">
+                <div class="project-card glass-card rounded-lg p-6 group anim-fade-up" data-category="personal">
                     <a href="https://github.com/Ansh-Y/Pizza_Sales_Dashboard" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2">
                         <h3 class="text-xl font-bold text-gray-900 group-hover:text-[#F59E0B] transition-colors">Pizza Sales Dashboard</h3>
                         <span class="text-lg text-gray-500 group-hover:text-[#F59E0B] transition-colors transform -rotate-45 group-hover:rotate-0">→</span>
                     </a>
                     <p class="text-sm text-gray-600 mt-1 mb-3">Sales performance & trends dashboard</p>
                      <div class="flex flex-wrap gap-2 mb-4">
-                        <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Power BI</span>
-                        <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">DAX</span>
+                        <span class="skill-tag text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Power BI</span>
+                        <span class="skill-tag text-xs bg-green-100 text-green-800 px-2 py-1 rounded">DAX</span>
                     </div>
                     <p class="text-gray-600 text-sm">Built a multi-table Power BI dashboard to analyze sales data, gaining key insights into business performance indicators.</p>
                 </div>
-                 <div onclick="showModal('sih.png','portrait'); return false;" role="button" tabindex="0" class="project-card glass-card rounded-lg p-6 hover:border-amber-500 border border-transparent transition-all group anim-fade-up cursor-pointer" data-category="academic">
+                 <div onclick="showModal('sih.png','portrait'); return false;" role="button" tabindex="0" class="project-card glass-card rounded-lg p-6 group anim-fade-up cursor-pointer" data-category="academic">
                     <h3 class="text-xl font-bold text-gray-900">Secure Data Wiping (SIH Project)</h3>
                     <p class="text-sm text-gray-600 mt-1 mb-3">System for permanent and secure data deletion</p>
                      <div class="flex flex-wrap gap-2 mb-4">
-                        <span class="text-xs bg-gray-200 text-gray-800 px-2 py-1 rounded">Python</span>
-                        <span class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">Cryptography</span>
-                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">File Systems</span>
+                        <span class="skill-tag text-xs bg-gray-200 text-gray-800 px-2 py-1 rounded">Python</span>
+                        <span class="skill-tag text-xs bg-red-100 text-red-800 px-2 py-1 rounded">Cryptography</span>
+                        <span class="skill-tag text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">File Systems</span>
                     </div>
                     <p class="text-gray-600 text-sm">Developed a prototype demonstrating multi-pass overwrite techniques for secure data sanitization, proposed for SIH.</p>
                 </div>
@@ -490,23 +661,23 @@
         </section>
 
         <section id="experience" class="pt-24 -mt-16">
-            <h2 class="text-3xl font-bold text-white-outside-card text-center mb-12 anim-fade-up">Experience & Certifications</h2>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 anim-fade-up">
-                <div>
+            <h2 class="text-3xl font-bold text-accent-gradient text-center mb-12 anim-fade-up">Experience & Certifications</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div class="fade-in-left">
                     <h3 class="text-2xl font-semibold text-white mb-6">Leadership & Co-curriculars</h3>
-                    <div class="space-y-6 border-l-2 border-gray-300 pl-6">
+                    <div class="space-y-6 border-l-2 timeline-line pl-6">
                         <div class="relative">
-                            <div class="absolute -left-[34px] top-1 h-4 w-4 rounded-full bg-[#F59E0B]"></div>
+                            <div class="absolute -left-[34px] top-1 h-4 w-4 rounded-full timeline-dot"></div>
                             <h4 class="font-bold text-white">HackSphere 2025: Coordinator</h4>
                             <p class="text-sm text-gray-600-outside-card">Managed logistics and participant support.</p>
                         </div>
                         <div class="relative">
-                            <div class="absolute -left-[34px] top-1 h-4 w-4 rounded-full bg-[#F59E0B]"></div>
+                            <div class="absolute -left-[34px] top-1 h-4 w-4 rounded-full timeline-dot"></div>
                             <h4 class="font-bold text-white">Innovision 2k23: Core Team Member</h4>
                             <p class="text-sm text-gray-600-outside-card">Focused on Startup Outreach.</p>
                         </div>
                         <div class="relative">
-                           <div class="absolute -left-[34px] top-1 h-4 w-4 rounded-full bg-[#F59E0B]"></div>
+                           <div class="absolute -left-[34px] top-1 h-4 w-4 rounded-full timeline-dot"></div>
                             <h4 class="font-bold text-white">Techhawks & GDGC Clubs: Lead & Coordinator</h4>
                             <p class="text-sm text-gray-600-outside-card">Served in operations, management, and event coordination roles for speaker events.</p>
                         </div>
@@ -514,19 +685,19 @@
                     <div class="mt-8">
                         <h4 class="text-xl font-semibold text-white mb-4">HackSphere 2025 Moments</h4>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            <div class="glass-card rounded-lg overflow-hidden cursor-pointer transform transition-transform hover:scale-105" onclick="showModal('e1.jpeg', 'portrait')">
+                            <div class="glass-card rounded-lg overflow-hidden cursor-pointer" onclick="showModal('e1.jpeg', 'portrait')">
                                 <img src="e1.jpeg" alt="HackSphere Individual" class="w-full h-44 object-cover object-[center_35%] p-1">
                             </div>
-                            <div class="glass-card rounded-lg overflow-hidden cursor-pointer transform transition-transform hover:scale-105" onclick="showModal('e2.jpeg', 'portrait')">
+                            <div class="glass-card rounded-lg overflow-hidden cursor-pointer" onclick="showModal('e2.jpeg', 'portrait')">
                                 <img src="e2.jpeg" alt="HackSphere with Faculty" class="w-full h-44 object-cover object-[center_35%] p-1">
                             </div>
-                            <div class="glass-card rounded-lg overflow-hidden cursor-pointer transform transition-transform hover:scale-105" onclick="showModal('e3.jpeg', 'portrait')">
+                            <div class="glass-card rounded-lg overflow-hidden cursor-pointer" onclick="showModal('e3.jpeg', 'portrait')">
                                 <img src="e3.jpeg" alt="HackSphere Group" class="w-full h-44 object-cover object-[center_35%] p-1">
                             </div>
                         </div>
                     </div>
                 </div>
-                <div>
+                <div class="fade-in-right">
                     <h3 class="text-2xl font-semibold text-white mb-6">Certifications & Learning</h3>
                     <div class="space-y-4">
                         <div class="glass-card rounded-lg p-4 flex justify-between items-center">
@@ -570,8 +741,8 @@
         </section>
 
         <section id="education" class="pt-24 -mt-16">
-            <h2 class="text-3xl font-bold text-white-outside-card text-center mb-12 anim-fade-up">Education</h2>
-            <div class="max-w-3xl mx-auto overflow-x-auto glass-card rounded-lg p-4 anim-fade-up">
+            <h2 class="text-3xl font-bold text-accent-gradient text-center mb-12 anim-fade-up">Education</h2>
+            <div class="max-w-3xl mx-auto overflow-x-auto glass-card rounded-lg p-4 fade-in-left">
                  <table class="w-full text-left">
                     <thead>
                         <tr class="border-b border-gray-300">
@@ -603,7 +774,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="max-w-sm mx-auto overflow-x-auto glass-card rounded-lg p-4 mt-8 anim-fade-up">
+            <div class="max-w-sm mx-auto overflow-x-auto glass-card rounded-lg p-4 mt-8 fade-in-right">
                 <h3 class="text-lg font-semibold text-gray-900 text-center mb-3">Semester GPA</h3>
                  <table class="w-full text-center">
                     <thead>
@@ -632,8 +803,9 @@
                 <p class="text-gray-600 max-w-lg mx-auto mb-8">
                     I'm always open to discussing new projects, creative ideas, or opportunities to be part of your vision. Feel free to reach out.
                 </p>
-                <a href="mailto:[Insert email]" class="inline-block px-8 py-3 bg-[#F59E0B] text-gray-900 text-sm font-bold rounded-full hover:bg-opacity-90 transition-colors shadow-lg">
-                    Say Hello 📧
+                <a href="mailto:[Insert email]" class="say-hello-button">
+                    <span>Say Hello 📧</span>
+                    <span class="arrow-icon">→</span>
                 </a>
             </div>
         </section>
@@ -648,6 +820,37 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+
+            // Mouse-follow spotlight effect
+            document.addEventListener('mousemove', e => {
+                document.documentElement.style.setProperty('--x', e.clientX + 'px');
+                document.documentElement.style.setProperty('--y', e.clientY + 'px');
+            });
+
+            // 3D Card Tilt + Sheen Effect
+            document.querySelectorAll('.glass-card').forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left; // X relative to card
+                    const y = e.clientY - rect.top;  // Y relative to card
+                    
+                    // Set CSS variables for sheen
+                    card.style.setProperty('--mouse-x', `${x}px`);
+                    card.style.setProperty('--mouse-y', `${y}px`);
+
+                    // 3D tilt logic
+                    const tiltX = (y - rect.height / 2) / (rect.height / 2) * -8;
+                    const tiltY = (x - rect.width / 2) / (rect.width / 2) * 8;
+                    
+                    card.style.transform = `perspective(1000px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) translateY(-5px)`;
+                    card.style.boxShadow = '0 20px 35px rgba(0, 0, 0, 0.2)';
+                });
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0)';
+                    card.style.boxShadow = 'none';
+                });
+            });
+
 
             const mobileMenuButton = document.getElementById('mobile-menu-button');
             const mobileMenu = document.getElementById('mobile-menu');
@@ -764,19 +967,80 @@
                 });
             });
 
+            // On-scroll fade-in
             const animationObserver = new IntersectionObserver((entries, observer) => {
-                entries.forEach(entry => {
+                entries.forEach((entry, index) => {
                     if (entry.isIntersecting) {
-                        entry.target.classList.add('is-visible');
+                        // Add a staggered delay
+                        setTimeout(() => {
+                            entry.target.classList.add('is-visible');
+                        }, index * 100); // 100ms delay per element
                         observer.unobserve(entry.target);
                     }
                 });
             }, { threshold: 0.1 });
 
-            document.querySelectorAll('.anim-fade-up').forEach(el => {
+            document.querySelectorAll('.anim-fade-up, .fade-in-left, .fade-in-right').forEach(el => {
                 animationObserver.observe(el);
             });
         });
+    </script>
+
+    <script>
+        (async () => {
+            await loadSlim(tsParticles);
+            await tsParticles.load("tsparticles", {
+                fpsLimit: 120,
+                interactivity: {
+                    events: {
+                        onHover: {
+                            enable: true,
+                            mode: "repulse",
+                        },
+                    },
+                    modes: {
+                        repulse: {
+                            distance: 100,
+                            duration: 0.4,
+                        },
+                    },
+                },
+                particles: {
+                    color: {
+                        value: "#ffffff",
+                    },
+                    links: {
+                        enable: false,
+                    },
+                    move: {
+                        direction: "none",
+                        enable: true,
+                        outModes: {
+                            default: "out",
+                        },
+                        random: true,
+                        speed: 0.5,
+                        straight: false,
+                    },
+                    number: {
+                        density: {
+                            enable: true,
+                        },
+                        value: 100,
+                    },
+                    opacity: {
+                        value: { min: 0.1, max: 0.5 },
+                    },
+                    shape: {
+                        type: "circle",
+                    },
+                    size: {
+                        value: { min: 1, max: 3 },
+                    },
+                },
+                detectRetina: true,
+            });
+        })();
     </script>
 
     <div id="imageModal" class="modal">
