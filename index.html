@@ -19,6 +19,24 @@
             --y: 50%;
         }
 
+        /* NEW: Hide default cursor and apply custom scrollbar */
+        html {
+            cursor: none;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #e0e0e0;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #F59E0B; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #e4910a; 
+        }
+
         body {
             font-family: 'Inter', sans-serif;
             color: #1F2937; /* Default text color (dark gray) */
@@ -29,6 +47,45 @@
         h1, h2, h3, h4, h5, h6 {
             font-family: 'Figtree', sans-serif;
             font-weight: 700;
+        }
+
+        /* NEW: Custom Cursor Styles */
+        .cursor-dot {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 8px;
+            height: 8px;
+            background-color: #F59E0B;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: width 0.2s ease, height 0.2s ease;
+        }
+        .cursor-outline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 30px;
+            height: 30px;
+            border: 2px solid #F59E0B;
+            opacity: 0.5;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s ease, height 0.3s ease, opacity 0.3s ease;
+        }
+        /* Cursor hover state: :has() is very modern, but fits the rest of the design */
+        body:has(a:hover, button:hover, .glass-card:hover, .cursor-pointer:hover) .cursor-dot {
+            width: 4px; /* Dot shrinks */
+            height: 4px;
+        }
+        body:has(a:hover, button:hover, .glass-card:hover, .cursor-pointer:hover) .cursor-outline {
+            width: 40px; /* Ring expands */
+            height: 40px;
+            opacity: 1;
         }
 
         /* Particle.js container */
@@ -201,7 +258,7 @@
             overflow: hidden;   /* Clip the sheen */
         }
         
-        /* NEW: Card Sheen Effect */
+        /* Card Sheen Effect */
         .glass-card::before {
             content: '';
             position: absolute;
@@ -318,7 +375,7 @@
         }
 
 
-        /* --- NEW: Scroll Animations --- */
+        /* --- Scroll Animations --- */
         .anim-fade-up {
             opacity: 0;
             transform: translateY(30px);
@@ -471,6 +528,9 @@
     </script>
 </head>
 <body class="antialiased">
+
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
 
     <div id="tsparticles"></div>
 
@@ -821,10 +881,24 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
 
-            // Mouse-follow spotlight effect
+            // Custom Cursor elements
+            const cursorDot = document.querySelector('.cursor-dot');
+            const cursorOutline = document.querySelector('.cursor-outline');
+
+            // Mouse-follow for spotlight AND cursor
             document.addEventListener('mousemove', e => {
-                document.documentElement.style.setProperty('--x', e.clientX + 'px');
-                document.documentElement.style.setProperty('--y', e.clientY + 'px');
+                // Use requestAnimationFrame for performance
+                requestAnimationFrame(() => {
+                    // Spotlight
+                    document.documentElement.style.setProperty('--x', e.clientX + 'px');
+                    document.documentElement.style.setProperty('--y', e.clientY + 'px');
+
+                    // Custom Cursor
+                    cursorDot.style.left = e.clientX + 'px';
+                    cursorDot.style.top = e.clientY + 'px';
+                    cursorOutline.style.left = e.clientX + 'px';
+                    cursorOutline.style.top = e.clientY + 'px';
+                });
             });
 
             // 3D Card Tilt + Sheen Effect
