@@ -19,7 +19,7 @@
             --y: 50%;
         }
 
-        /* NEW: Hide default cursor and apply custom scrollbar */
+        /* Hide default cursor and apply custom scrollbar */
         html {
             cursor: none;
         }
@@ -389,20 +389,21 @@
             transform: translateY(0);
         }
         
+        /* NEW: Enhanced Scroll Animations */
         .fade-in-left {
             opacity: 0;
-            transform: translateX(-50px) translateY(30px);
+            transform: translateX(-50px) translateY(30px) rotate(-3deg);
             transition: opacity 0.8s ease-out, transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
         .fade-in-right {
             opacity: 0;
-            transform: translateX(50px) translateY(30px);
+            transform: translateX(50px) translateY(30px) rotate(3deg);
             transition: opacity 0.8s ease-out, transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
         .fade-in-left.is-visible,
         .fade-in-right.is-visible {
             opacity: 1;
-            transform: translateX(0) translateY(0);
+            transform: translateX(0) translateY(0) rotate(0deg);
         }
         /* --- End Scroll Animations --- */
 
@@ -958,7 +959,7 @@
             const navLinks = document.querySelectorAll('.nav-link');
             const sections = document.querySelectorAll('main section');
 
-            // --- THIS IS THE NAV SCROLL FIX ---
+            // --- NAV SCROLL FIX ---
             const observerOptions = {
                 root: null,
                 rootMargin: '0px',
@@ -1109,7 +1110,7 @@
                 },
                 particles: {
                     color: {
-                        value: "#ffffff",
+                        value: "#F59E0B", // NEW: Themed particle color
                     },
                     links: {
                         enable: false,
@@ -1128,10 +1129,17 @@
                         density: {
                             enable: true,
                         },
-                        value: 100,
+                        value: 80, // Slightly fewer particles
                     },
                     opacity: {
                         value: { min: 0.1, max: 0.5 },
+                        // NEW: Twinkle animation
+                        animation: {
+                            enable: true,
+                            speed: 1,
+                            minimumValue: 0.1,
+                            sync: false
+                        }
                     },
                     shape: {
                         type: "circle",
