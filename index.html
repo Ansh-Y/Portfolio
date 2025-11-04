@@ -120,10 +120,8 @@
             transform: scale(1.05); 
             transition: background 0.1s ease; /* Smooth spotlight movement */
             
-            /* --- THIS IS THE FIX --- */
-            /* Promote to its own GPU layer to prevent flashing */
+            /* Performance Fix */
             will-change: transform, filter;
-            /* --- END FIX --- */
         }
 
         /* Class for text OUTSIDE cards that should be white */
@@ -886,26 +884,41 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
 
-            // --- THIS IS THE OPTIMIZED JAVASCRIPT ---
+            // --- OPTIMIZED MOUSE-FOLLOW SCRIPT ---
             const cursorDot = document.querySelector('.cursor-dot');
             const cursorOutline = document.querySelector('.cursor-outline');
+            
+            // Use requestAnimationFrame for smooth, non-blocking animation
+            let mouseX = 0, mouseY = 0;
+            let cursorX = 0, cursorY = 0;
+            let spotlightX = 0, spotlightY = 0;
 
-            // Mouse-follow for spotlight AND cursor (throttled)
             document.addEventListener('mousemove', e => {
-                // Use requestAnimationFrame for performance
-                requestAnimationFrame(() => {
-                    // Spotlight
-                    document.documentElement.style.setProperty('--x', e.clientX + 'px');
-                    document.documentElement.style.setProperty('--y', e.clientY + 'px');
-
-                    // Custom Cursor
-                    cursorDot.style.left = e.clientX + 'px';
-                    cursorDot.style.top = e.clientY + 'px';
-                    cursorOutline.style.left = e.clientX + 'px';
-                    cursorOutline.style.top = e.clientY + 'px';
-                });
+                mouseX = e.clientX;
+                mouseY = e.clientY;
             });
-            // --- END OPTIMIZED JAVASCRIPT ---
+
+            function animate() {
+                // Lerp (linear interpolation) for smooth cursor following
+                cursorX += (mouseX - cursorX) * 0.15;
+                cursorY += (mouseY - cursorY) * 0.15;
+                
+                cursorDot.style.left = cursorX + 'px';
+                cursorDot.style.top = cursorY + 'px';
+                cursorOutline.style.left = cursorX + 'px';
+                cursorOutline.style.top = cursorY + 'px';
+                
+                // Spotlight (can be less smooth)
+                spotlightX += (mouseX - spotlightX) * 0.2;
+                spotlightY += (mouseY - spotlightY) * 0.2;
+
+                document.documentElement.style.setProperty('--x', spotlightX + 'px');
+                document.documentElement.style.setProperty('--y', spotlightY + 'px');
+
+                requestAnimationFrame(animate);
+            }
+            animate(); // Start the animation loop
+            // --- END OPTIMIZED SCRIPT ---
 
 
             // 3D Card Tilt + Sheen Effect
@@ -945,21 +958,29 @@
             const navLinks = document.querySelectorAll('.nav-link');
             const sections = document.querySelectorAll('main section');
 
+            // --- THIS IS THE NAV SCROLL FIX ---
             const observerOptions = {
                 root: null,
                 rootMargin: '0px',
-                threshold: 0.4
+                threshold: 0.6 // Section must be 60% visible
             };
 
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
+                    // When a section passes the 60% threshold
                     if (entry.isIntersecting) {
-                        navLinks.forEach(link => {
-                            link.classList.toggle('active', link.getAttribute('href').substring(1) === entry.target.id);
-                        });
+                        // Remove 'active' from all links
+                        navLinks.forEach(l => l.classList.remove('active'));
+                        
+                        // Find the one link that matches and add 'active'
+                        const activeLink = document.querySelector(`.nav-link[href="#${entry.target.id}"]`);
+                        if(activeLink) {
+                            activeLink.classList.add('active');
+                        }
                     }
                 });
             }, observerOptions);
+            // --- END NAV SCROLL FIX ---
 
             sections.forEach(section => {
                 observer.observe(section);
