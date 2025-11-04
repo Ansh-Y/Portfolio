@@ -900,8 +900,8 @@
 
             function animate() {
                 // Lerp (linear interpolation) for smooth cursor following
-                cursorX += (mouseX - cursorX) * 0.15;
-                cursorY += (mouseY - cursorY) * 0.15;
+                cursorX += (mouseX - cursorX) * 0.5;
+                cursorY += (mouseY - cursorY) * 0.5;
                 
                 cursorDot.style.left = cursorX + 'px';
                 cursorDot.style.top = cursorY + 'px';
